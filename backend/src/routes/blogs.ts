@@ -14,23 +14,29 @@ export const blogRouter = new Hono<{
     }
 }>();
 
-blogRouter.use("/*" , async (c, next) => {
-    const jwt = c.req.header('Authorization');
-    if (!jwt){
+blogRouter.use("/*", async (c, next) => {
+    const jwt = c.req.header('authorization');
+    if (!jwt) {
         c.status(401);
-        return c.json({error : "unauthorized"})
+        return c.json({ error: "unauthorized" });
     }
     
-    const token = jwt.split(" ")[1];
-    const payload = await verify(token, c.env.JWT_SECRET);
-    
-    if (!payload){
+    try {
+        const token = jwt.split(" ")[1];
+
+        const payload = await verify(token, c.env.JWT_SECRET);
+        if (!payload) {
+            c.status(401);
+            return c.json({ error: "unauthorized" });
+        }
+
+        c.set('userid', payload.id as string);
+        await next();
+    } catch (error) {
+        console.error("JWT Verification Error:", error);
         c.status(401);
-        return c.json({ error : "unauthorized"})
+        return c.json({ error: "unauthorized" });
     }
-    
-    c.set('userid', payload.id as string);
-    await next();
 });
 
 
@@ -69,17 +75,23 @@ blogRouter.put("/", async(c) => {
     }).$extends(withAccelerate());
 
     const body = await c.req.json();
-    prisma.post.update({
-        where : {
-            id : body.id,
-            authorid : body.userId
-        },
-        data : {
-            title : body.title,
-            content : body.content
-        }
-    });
-    return c.text("Updated Blog!!")
+    try {
+
+        prisma.post.update({
+            where : {
+                id : body.id,
+                authorid : body.userId
+            },
+            data : {
+                title : body.title,
+                content : body.content
+            }
+        });
+        return c.text("Updated the Blog!!")
+    }
+    catch(e){
+        return c.text("Something went wrong :( ")
+    }
 })
 
 blogRouter.get("/bulk", async(c) => {

@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 import { Hono } from "hono";
 import { sign } from "hono/jwt";
-
+import { signupInput, signinInput } from "@100xharshith/medium-common";
 // Define the interface for request bodies
 interface AuthBody {
     email: string;
@@ -22,6 +22,13 @@ userRouter.post('/signup', async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+  const {success} = signupInput.safeParse(body)
+  if(!success) {
+    c.status(411)
+    c.json({
+        message : "Inputs are not correct"
+    })
+  }
 
   // Ensure all required fields are provided
   if (!body.email || !body.password || !body.name) {
@@ -59,6 +66,14 @@ userRouter.post('/signin', async (c) => {
   }).$extends(withAccelerate());
 
   const body = await c.req.json();
+  const {success} = signinInput.safeParse(body)
+  if(!success) {
+    c.status(411)
+    c.json({
+        message : "Inputs are not correct"
+    })
+  }
+
 
   // Ensure email and password are provided
   if (!body.email || !body.password) {

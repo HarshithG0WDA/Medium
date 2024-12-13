@@ -34,3 +34,5 @@ lerna-debug.log*
 .DS_Store
 
 wrangler.toml
+common/node_modules
+common/src

@@ -13,6 +13,7 @@ dist/
 
 # deps
 node_modules/
+wrangle.toml
 .wrangler
 
 # env
@@ -31,3 +32,5 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+wrangler.toml
